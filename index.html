@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script>
+      const initCanvas = () => {
+        const canv = document.createElement("canvas");
+        const width = (80 * window.innerWidth) / 100;
+        const height = (80 * window.innerHeight) / 100;
+        canv.setAttribute("width", width);
+        canv.setAttribute("height", height);
+        canv.setAttribute("id", "cube");
+
+        document.body.appendChild(canv);
+        draw();
+      };
+
+      const draw = () => {
+        const goldenRatioPhi = 1.618;
+        const width = (80 * window.innerWidth) / 100;
+        const height = (80 * window.innerWidth) / 100 / goldenRatioPhi;
+        const canvasCube = document.getElementById("cube");
+        const ctx = canvasCube.getContext("2d");
+        ctx.canvas.width = width;
+        ctx.canvas.height = height;
+        ctx.strokeStyle = "black";
+        ctx.beginPath();
+
+        // frame
+        ctx.moveTo(0, 0);
+        ctx.lineTo(width - 1, 0);
+        ctx.lineTo(width - 1, height - 1);
+        ctx.lineTo(0, height - 1);
+        ctx.lineTo(0, 0);
+
+        const diagonalLine = (15 * width) / 100;
+        // top
+        ctx.moveTo(1, 1);
+        ctx.lineTo(diagonalLine, diagonalLine);
+        ctx.lineTo(width - diagonalLine, diagonalLine);
+        ctx.lineTo(width, 0);
+
+        // right
+        ctx.moveTo(width - diagonalLine, diagonalLine);
+        ctx.lineTo(width - diagonalLine, height - diagonalLine);
+        ctx.lineTo(width, height);
+
+        // bottom
+        ctx.moveTo(width - diagonalLine, height - diagonalLine);
+        ctx.lineTo(diagonalLine, height - diagonalLine);
+
+        // left
+        ctx.lineTo(diagonalLine, diagonalLine);
+        ctx.moveTo(diagonalLine, height - diagonalLine);
+        ctx.lineTo(0, height);
+
+        ctx.stroke();
+      };
+      window.onresize = draw;
+    </script>
+  </head>
+  <body onload="initCanvas();"></body>
+</html>
