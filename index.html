@@ -5,61 +5,190 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
     <script>
-      const initCanvas = () => {
-        const canv = document.createElement("canvas");
-        const width = (80 * window.innerWidth) / 100;
-        const height = (80 * window.innerHeight) / 100;
-        canv.setAttribute("width", width);
-        canv.setAttribute("height", height);
-        canv.setAttribute("id", "cube");
+      const goldenRatioPhi = 1.618;
 
-        document.body.appendChild(canv);
-        draw();
+      const rectPaths = {
+        left: null,
+        right: null,
+        top: null,
+        bottom: null,
+        center: null,
       };
 
-      const draw = () => {
-        const goldenRatioPhi = 1.618;
-        const width = (80 * window.innerWidth) / 100;
-        const height = (80 * window.innerWidth) / 100 / goldenRatioPhi;
-        const canvasCube = document.getElementById("cube");
-        const ctx = canvasCube.getContext("2d");
-        ctx.canvas.width = width;
-        ctx.canvas.height = height;
-        ctx.strokeStyle = "black";
+      const drawRectangle = ({ width, ctx, height }) => {
+        const diagonalLine = (15 * width) / 100;
         ctx.beginPath();
-
         // frame
+        // just to make it a bit bolder
         ctx.moveTo(0, 0);
         ctx.lineTo(width - 1, 0);
         ctx.lineTo(width - 1, height - 1);
         ctx.lineTo(0, height - 1);
         ctx.lineTo(0, 0);
 
-        const diagonalLine = (15 * width) / 100;
         // top
-        ctx.moveTo(1, 1);
-        ctx.lineTo(diagonalLine, diagonalLine);
-        ctx.lineTo(width - diagonalLine, diagonalLine);
-        ctx.lineTo(width, 0);
+        rectPaths.top.moveTo(1, 1);
+        rectPaths.top.lineTo(diagonalLine, diagonalLine);
+        rectPaths.top.lineTo(width - diagonalLine, diagonalLine);
+        rectPaths.top.lineTo(width, 0);
+        rectPaths.top.lineTo(1, 1);
+
+        ctx.stroke(rectPaths.top);
 
         // right
-        ctx.moveTo(width - diagonalLine, diagonalLine);
-        ctx.lineTo(width - diagonalLine, height - diagonalLine);
-        ctx.lineTo(width, height);
+        rectPaths.right.moveTo(width, 0);
+        rectPaths.right.lineTo(width - diagonalLine, diagonalLine);
+        rectPaths.right.lineTo(width - diagonalLine, height - diagonalLine);
+        rectPaths.right.lineTo(width, height);
+        rectPaths.right.lineTo(width - 1, 1);
+
+        ctx.stroke(rectPaths.right);
 
         // bottom
-        ctx.moveTo(width - diagonalLine, height - diagonalLine);
-        ctx.lineTo(diagonalLine, height - diagonalLine);
+        rectPaths.bottom.moveTo(width - 1, height - 1);
+        rectPaths.bottom.lineTo(width - diagonalLine, height - diagonalLine);
+        rectPaths.bottom.lineTo(diagonalLine, height - diagonalLine);
+        rectPaths.bottom.lineTo(1, height - 1);
+        rectPaths.bottom.lineTo(width - 1, height - 1);
+
+        ctx.stroke(rectPaths.bottom);
 
         // left
-        ctx.lineTo(diagonalLine, diagonalLine);
-        ctx.moveTo(diagonalLine, height - diagonalLine);
-        ctx.lineTo(0, height);
+        rectPaths.left.moveTo(1, height - 1);
+        rectPaths.left.lineTo(diagonalLine, height - diagonalLine);
+        rectPaths.left.lineTo(diagonalLine, diagonalLine);
+        rectPaths.left.lineTo(1, 1);
+        rectPaths.left.lineTo(1, height - 1);
 
-        ctx.stroke();
+        ctx.stroke(rectPaths.left);
+
+        // center
+        rectPaths.center.moveTo(diagonalLine, diagonalLine);
+        rectPaths.center.lineTo(diagonalLine, height - diagonalLine);
+        rectPaths.center.lineTo(width - diagonalLine, height - diagonalLine);
+        rectPaths.center.lineTo(width - diagonalLine, diagonalLine);
+        rectPaths.center.lineTo(diagonalLine, diagonalLine);
+
+        ctx.stroke(rectPaths.center);
       };
+
+      const drawWords = ({ ctx, width, height }) => {
+        const textSize = (5 * window.innerWidth) / 100;
+        // center text
+        ctx.font = `${textSize}px Bree Serif bold`;
+        const centerText = "CENTER";
+        const centerTextMeasurements = ctx.measureText(centerText);
+        const paddingInsideTheBox =
+          (width - centerTextMeasurements.actualBoundingBoxRight) / 2;
+        ctx.fillText(centerText, paddingInsideTheBox, height / 2);
+        rectPaths.center.drawTextOnPath;
+
+        ctx.save();
+        ctx.font = `${textSize / 3}px Bree Serif bold`;
+        const rightText = "right";
+        const rightTextMeasurements = ctx.measureText(rightText);
+        ctx.rotate(-Math.PI / 2);
+        ctx.fillText(
+          rightText,
+          -(height + rightTextMeasurements.actualBoundingBoxAscent) / 2,
+          width - rightTextMeasurements.actualBoundingBoxAscent
+        );
+        ctx.restore();
+
+        ctx.save();
+        ctx.font = `${textSize / 3}px Bree Serif bold`;
+        const leftText = "left";
+        const leftTextMeasurements = ctx.measureText(leftText);
+        ctx.rotate(Math.PI / 2);
+        ctx.fillText(
+          leftText,
+          height / 2 - leftTextMeasurements.actualBoundingBoxRight,
+          -leftTextMeasurements.actualBoundingBoxAscent
+        );
+        ctx.restore();
+      };
+
+      const draw = () => {
+        // reinit rectPaths
+        rectPaths.left = new Path2D();
+        rectPaths.right = new Path2D();
+        rectPaths.top = new Path2D();
+        rectPaths.bottom = new Path2D();
+        rectPaths.center = new Path2D();
+        // define the size
+        // oh yeah it's kind of a golden rect
+        const width = (80 * window.innerWidth) / 100;
+        const height =
+          width / goldenRatioPhi > window.innerHeight
+            ? window.innerHeight - 10
+            : width / goldenRatioPhi;
+
+        // get refs & set styles
+        const canvasCube = document.getElementById("cube");
+        if (!canvasCube) return;
+        const ctx = canvasCube.getContext("2d");
+        ctx.canvas.width = width;
+        ctx.canvas.height = height;
+        ctx.strokeStyle = "rgb(250, 220,205)";
+        ctx.fillStyle = "rgb(250, 220,205)";
+        ctx.lineWidth = 3;
+        canvasCube.style.top = `${(window.innerHeight - height) / 2}px`;
+        canvasCube.style.left = `${(window.innerWidth - width) / 2}px`;
+        canvasCube.style.position = "flex";
+        canvasCube.style.cursor = "pointer";
+
+        // draw the stuff
+        drawWords({ width, height, ctx });
+        drawRectangle({ width, height, ctx });
+      };
+
+      const handleCubeClick = (event) => {
+        const canvasCube = document.getElementById("cube");
+        if (!canvasCube) return;
+        const ctx = canvasCube.getContext("2d");
+        const bound = canvasCube.getBoundingClientRect();
+        const x = event.clientX - bound.left;
+        const y = event.clientY - bound.top;
+        if (ctx.isPointInPath(rectPaths.top, x, y)) {
+          console.log("top");
+        } else if (ctx.isPointInPath(rectPaths.right, x, y)) {
+          console.log("right");
+        } else if (ctx.isPointInPath(rectPaths.bottom, x, y)) {
+          console.log("bottom");
+        } else if (ctx.isPointInPath(rectPaths.left, x, y)) {
+          console.log("left");
+        } else if (ctx.isPointInPath(rectPaths.center, x, y)) {
+          console.log("center");
+        } else {
+          console.log("no luck");
+        }
+      };
+
+      draw();
+      window.addEventListener("resize", draw);
       window.onresize = draw;
+      window.onload = () => {
+        draw();
+        document
+          .getElementById("cube")
+          .addEventListener("click", handleCubeClick);
+      };
     </script>
+    <style>
+      body {
+        height: 100vh;
+        width: 100vw;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: black;
+      }
+      #cube {
+        position: "absolute";
+      }
+    </style>
   </head>
-  <body onload="initCanvas();"></body>
+  <body>
+    <canvas id="cube"></canvas>
+  </body>
 </html>
